@@ -1,0 +1,8 @@
+{
+  "name": "LaunchLens",
+  "description": "A pre-launch product testing platform connecting creators with targeted testers across SaaS, Apps, Games, and more.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

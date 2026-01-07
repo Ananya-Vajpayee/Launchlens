@@ -1,0 +1,66 @@
+
+/* 
+  EXPRESS API ROUTE STRUCTURE
+  ---------------------------
+  Implementation Guide for Backend
+*/
+
+// --- AUTH ROUTES ---
+// POST /api/auth/register
+// Body: { email, password, name, role, ...profileData }
+// Action: Hashes password, creates User + Profile record, returns JWT
+
+// POST /api/auth/login
+// Body: { email, password }
+// Action: Verifies hash, returns JWT
+
+// --- USER ROUTES ---
+// GET /api/users/me
+// Action: Returns profile data for logged in user
+
+// --- TEST ROUTES (CREATOR) ---
+// POST /api/tests
+// Auth: Creator only
+// Body: { niche, title, productUrl, description, instructions, targetAudience, packageId }
+// Action: Creates test record with status 'DRAFT'. Initiates Stripe checkout session.
+
+// GET /api/tests
+// Auth: Creator only
+// Action: Returns all tests created by user
+
+// GET /api/tests/:id/results
+// Auth: Creator (owner) only
+// Action: Returns aggregated stats + list of TestResult records
+
+// --- TEST ROUTES (TESTER) ---
+// GET /api/tests/available
+// Auth: Tester only
+// Action: Queries tests where status='ACTIVE', matches tester interests/demographics, and tester hasn't already completed.
+
+// POST /api/tests/:id/submit
+// Auth: Tester only
+// Body: { ratings, feedback, videoUrl }
+// Action: Creates TestResult, updates Assignment status, increments Tester credits, updates Test completedCount.
+
+// --- WEBHOOKS ---
+// POST /api/webhooks/stripe
+// Action: Listens for payment_intent.succeeded. Updates Test status to 'ACTIVE' and triggers matching algorithm.
+
+/* 
+  MATCHING ALGORITHM LOGIC (pseudo-code)
+  --------------------------------------
+  function findMatches(test) {
+    const candidates = db.testers.find({
+      interests: { $in: [test.niche] },
+      age: { $gte: test.audience.minAge, $lte: test.audience.maxAge },
+      gender: { $in: [test.audience.gender, 'All'] }
+    }).sort({ qualityScore: -1 });
+
+    const selected = candidates.slice(0, test.packageSize);
+    
+    selected.forEach(tester => {
+      sendNotification(tester, "New Test Match!");
+      createAssignment(test.id, tester.id);
+    });
+  }
+*/
